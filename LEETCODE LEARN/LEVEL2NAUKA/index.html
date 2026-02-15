@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Kantor 2026</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; }
+        .karta { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; }
+        h1 { text-align: center; color: #333; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background-color: #0056b3; }
+        #wynik { margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 5px; display: none; text-align: center; }
+        .error { background: #ffebee !important; color: #c62828; }
+    </style>
+</head>
+<body>
+
+    <div class="karta">
+        <h1> Kantor 2026</h1>
+        
+        <label>Wybierz walutę:</label>
+        <select id="waluta">
+            <option value="eur">Euro (EUR)</option>
+            <option value="usd">Dolar (USD)</option>
+            <option value="chf">Frank (CHF)</option>
+        </select>
+
+        <label>Ile chcesz kupić?</label>
+        <input type="number" id="ilosc" placeholder="Np. 100">
+
+        <button onclick="kupWalute()">KUP TERAZ</button>
+
+        <div id="wynik"></div>
+    </div>
+
+    <script>
+        
+        async function kupWalute() {
+            
+            const waluta = document.getElementById("waluta").value;
+            const ilosc = document.getElementById("ilosc").value;
+            const wynikDiv = document.getElementById("wynik");
+
+            if (!ilosc) {
+                alert("Podaj ilość!");
+                return;
+            }
+
+            wynikDiv.style.display = "block";
+            wynikDiv.innerHTML = "Przetwarzanie transakcji...";
+            wynikDiv.className = ""; 
+
+            try {
+                
+                const response = await fetch(`http://127.0.0.1:8000/kup/${waluta}/${ilosc}`);
+                
+                
+                const data = await response.json();
+
+                if (data.blad) {
+                    wynikDiv.innerHTML = `Błąd: ${data.blad}`;
+                    wynikDiv.className = "error";
+                } else {
+                    
+                    wynikDiv.innerHTML = `
+                        <strong>Sukces!</strong><br>
+                        Kupiono: ${data.kupiono}<br>
+                        Kurs: ${data.kurs_wymiany} zł<br>
+                        ----------------<br>
+                        <strong>Do zapłaty: ${data.koszt_pln} zł</strong>
+                    `;
+                }
+
+            } catch (error) {
+                wynikDiv.innerHTML = "Błąd połączenia z serwerem. Czy uvicorn działa?";
+                wynikDiv.className = "error";
+            }
+        }
+    </script>
+
+</body>
+</html>
