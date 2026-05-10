@@ -3,10 +3,12 @@
 
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Repository root (parent of `backend/`) so a `.env` at project root is visible locally.
 _REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -24,7 +26,19 @@ class Settings(BaseSettings):
     database_url: str | None = None
     chroma_host: str = "localhost"
     chroma_port: int = 8001
+    chroma_collection_name: str = "corporate_rag_chunks"
+
     ollama_base_url: str = "http://localhost:11434"
+    ollama_embed_model: str = "nomic-embed-text"
+    ollama_embed_timeout_seconds: float = 120.0
+
+    upload_dir: Path = Field(default=Path("data/uploads"))
+    default_chunk_size: int = Field(default=800, ge=64, le=32000)
+    default_chunk_overlap: int = Field(default=120, ge=0, le=8000)
+    max_upload_bytes: int = Field(default=25 * 1024 * 1024, ge=1024)
+
+    document_preview_chunks: int = Field(default=3, ge=0, le=20)
+    document_preview_chunk_chars: int = Field(default=240, ge=0, le=2000)
 
     @property
     def database_url_sync(self) -> str:

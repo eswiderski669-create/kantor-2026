@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from app.api.v1 import health
+from app.api.v1 import documents, health
 from app.config import settings
 
 app = FastAPI(
@@ -11,6 +11,7 @@ app = FastAPI(
     description="RAG API for master's thesis project (WWSI).",
 )
 app.include_router(health.router, prefix="/api/v1")
+app.include_router(documents.router, prefix="/api/v1")
 
 
 @app.get("/")
@@ -19,4 +20,5 @@ async def root() -> dict[str, str]:
         "message": settings.app_name,
         "docs": "/docs",
         "health": "/api/v1/health",
+        "upload": "POST /api/v1/documents/upload",
     }

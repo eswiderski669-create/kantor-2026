@@ -34,10 +34,19 @@ services:
 
   ollama:
     image: ollama/ollama:latest
+    restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
 
   backend:
     build:
@@ -51,6 +60,11 @@ services:
       CHROMA_HOST: chroma
       CHROMA_PORT: "8000"
       OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+      CHROMA_COLLECTION_NAME: corporate_rag_chunks
+      UPLOAD_DIR: /app/data/uploads
+    volumes:
+      - uploads_data:/app/data/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,3 +77,4 @@ volumes:
   postgres_data:
   chroma_data:
   ollama_data:
+  uploads_data:
